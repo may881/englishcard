@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>單字測驗</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f0e17;
+    --card: #1a1a2e;
+    --accent: #f6c90e;
+    --accent2: #e94560;
+    --correct: #4ecca3;
+    --wrong: #e94560;
+    --text: #fffffe;
+    --muted: #a7a9be;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    font-family: 'Nunito', 'Noto Sans TC', sans-serif;
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background-image: radial-gradient(ellipse at 20% 50%, #1a1a3e 0%, transparent 60%),
+                      radial-gradient(ellipse at 80% 20%, #2a0a1e 0%, transparent 50%);
+  }
+  h1 {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 900;
+    font-size: 2rem;
+    letter-spacing: 2px;
+    color: var(--accent);
+    margin-bottom: 6px;
+    text-align: center;
+  }
+  .subtitle { color: var(--muted); font-size: 0.9rem; margin-bottom: 28px; text-align: center; }
+
+  .progress-bar-wrap {
+    width: 100%; max-width: 500px;
+    background: #222;
+    border-radius: 99px;
+    height: 8px;
+    margin-bottom: 28px;
+    overflow: hidden;
+  }
+  .progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 99px;
+    transition: width 0.5s ease;
+  }
+
+  .card {
+    background: var(--card);
+    border-radius: 20px;
+    padding: 36px 32px 28px;
+    max-width: 500px;
+    width: 100%;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.4);
+    border: 1px solid #ffffff0f;
+    position: relative;
+    animation: popIn 0.4s cubic-bezier(.34,1.56,.64,1);
+  }
+  @keyframes popIn {
+    from { opacity: 0; transform: scale(0.92) translateY(16px); }
+    to   { opacity: 1; transform: scale(1) translateY(0); }
+  }
+
+  .question-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    color: var(--muted);
+    margin-bottom: 12px;
+  }
+  .word {
+    font-size: 2.4rem;
+    font-weight: 900;
+    color: var(--accent);
+    margin-bottom: 6px;
+    line-height: 1.2;
+  }
+  .phonetic {
+    font-size: 0.9rem;
+    color: var(--muted);
+    margin-bottom: 28px;
+  }
+
+  .options {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .option-btn {
+    background: #ffffff0a;
+    border: 1.5px solid #ffffff18;
+    border-radius: 12px;
+    color: var(--text);
+    font-family: 'Noto Sans TC', sans-serif;
+    font-size: 1rem;
+    padding: 14px 10px;
+    cursor: pointer;
+    transition: all 0.18s ease;
+    text-align: center;
+  }
+  .option-btn:hover:not(:disabled) {
+    background: #ffffff18;
+    border-color: var(--accent);
+    transform: translateY(-2px);
+  }
+  .option-btn.correct {
+    background: rgba(78,204,163,0.18);
+    border-color: var(--correct);
+    color: var(--correct);
+    font-weight: 700;
+  }
+  .option-btn.wrong {
+    background: rgba(233,69,96,0.15);
+    border-color: var(--wrong);
+    color: var(--wrong);
+  }
+  .option-btn:disabled { cursor: default; }
+
+  .feedback {
+    text-align: center;
+    font-size: 1rem;
+    min-height: 28px;
+    margin-bottom: 8px;
+    font-weight: 700;
+    transition: opacity 0.3s;
+  }
+  .feedback.correct { color: var(--correct); }
+  .feedback.wrong   { color: var(--wrong); }
+
+  .next-btn {
+    width: 100%;
+    padding: 14px;
+    border-radius: 12px;
+    border: none;
+    background: linear-gradient(135deg, var(--accent), #f0a500);
+    color: #0f0e17;
+    font-family: 'Nunito', sans-serif;
+    font-size: 1.05rem;
+    font-weight: 900;
+    cursor: pointer;
+    margin-top: 4px;
+    transition: transform 0.15s, opacity 0.15s;
+    display: none;
+  }
+  .next-btn:hover { transform: translateY(-2px); opacity: 0.92; }
+
+  .score-card {
+    text-align: center;
+    animation: popIn 0.5s cubic-bezier(.34,1.56,.64,1);
+  }
+  .score-big {
+    font-size: 5rem;
+    font-weight: 900;
+    color: var(--accent);
+    line-height: 1;
+    margin: 16px 0 8px;
+  }
+  .score-label { color: var(--muted); font-size: 1rem; margin-bottom: 24px; }
+  .restart-btn {
+    padding: 14px 40px;
+    border-radius: 12px;
+    border: none;
+    background: linear-gradient(135deg, var(--accent2), #c0392b);
+    color: #fff;
+    font-family: 'Nunito', sans-serif;
+    font-size: 1.05rem;
+    font-weight: 900;
+    cursor: pointer;
+    transition: transform 0.15s;
+  }
+  .restart-btn:hover { transform: translateY(-2px); }
+
+  .counter {
+    position: absolute;
+    top: 20px; right: 24px;
+    font-size: 0.8rem;
+    color: var(--muted);
+    font-weight: 700;
+  }
+</style>
+</head>
+<body>
+
+<h1>📖 單字測驗</h1>
+<p class="subtitle">看英文，選中文意思！</p>
+
+<div class="progress-bar-wrap">
+  <div class="progress-bar" id="progressBar" style="width:0%"></div>
+</div>
+
+<div class="card" id="quizCard">
+  <div class="counter" id="counter"></div>
+  <div id="quizBody"></div>
+</div>
+
+<script>
+const vocab = [
+  ["like","[laɪk]","喜歡；像"],["sport","[spɔrt]","運動"],["much","[mʌtʃ]","很多"],
+  ["team","[tim]","團隊"],["practice","[`præktɪs]","練習"],["every","[`ɛvrɪ]","每個"],
+  ["then","[ðɛn]","然後"],["swim","[swɪm]","游泳"],["join","[dʒɔɪn]","加入"],
+  ["eye","[aɪ]","眼睛"],["hair","[hɛr]","頭髮"],["know","[no]","知道"],
+  ["hundred","[`hʌndrəd]","一百"],["centimeter","[`sɛntə,mitɚ]","公分"],
+  ["You can say that again!","[ju kən ,se `ðæt ə`gɛn]","我完全同意！"],
+  ["guitar","[gɪ`tar]","吉他"],["piano","[pɪ`æno]","鋼琴"],
+  ["fly a kite","[,flaɪ ə `kaɪt]","放風箏"],["paint","[pent]","畫畫；油漆"],
+  ["make a cake","[,mek ə `kek]","做蛋糕"],["nose","[noz]","鼻子"],
+  ["leg","[lɛg]","腿"],["large","[lardʒ]","大的"],["ear","[ɪr]","耳朵"],
+  ["mouth","[maʊθ]","嘴巴"],["thick","[θɪk]","厚的"],["lip","[lɪp]","嘴唇"],
+  ["strong","[strɔŋ]","強壯的"],["arm","[arm]","手臂"],["height","[haɪt]","身高"],
+  ["player","[`pleɚ]","選手"],["the USA","[ðə `ju `ɛs `e]","美國"],
+  ["body","[`badɪ]","身體"],["put one's all","[,put wʌnz `ɔl]","全力以赴"],
+  ["into","[`ɪntə]","進入；投入"],["a lot of","[ə `lat əv]","很多"],
+  ["stand out","[,stænd `aʊt]","突出；出眾"],["different","[`dɪf(ə)rənt]","不同的"],
+  ["top","[tap]","頂尖的"],["on the other hand","[,an ði `ʌðɚ hænd]","另一方面"],
+  ["make up for...","[mek `ʌp ,fɚ]","彌補…"]
+];
+
+const TOTAL = 10;
+let questions = [];
+let current = 0;
+let score = 0;
+let answered = false;
+
+function shuffle(arr) {
+  return [...arr].sort(() => Math.random() - 0.5);
+}
+
+function generateQuestions() {
+  const pool = shuffle(vocab).slice(0, TOTAL);
+  questions = pool.map(item => {
+    const correct = item[2];
+    const wrongs = shuffle(vocab.filter(v => v[2] !== correct)).slice(0, 1).map(v => v[2]);
+    const options = shuffle([correct, ...wrongs]);
+    return { word: item[0], phonetic: item[1], correct, options };
+  });
+}
+
+function renderQuestion() {
+  const q = questions[current];
+  answered = false;
+
+  document.getElementById('counter').textContent = `${current + 1} / ${TOTAL}`;
+  document.getElementById('progressBar').style.width = `${(current / TOTAL) * 100}%`;
+
+  document.getElementById('quizBody').innerHTML = `
+    <div class="question-label">選出正確的中文意思</div>
+    <div class="word">${q.word}</div>
+    <div class="phonetic">${q.phonetic}</div>
+    <div class="options" id="options">
+      ${q.options.map((opt, i) => `
+        <button class="option-btn" onclick="answer(this, '${opt.replace(/'/g,"\\'")}')">
+          ${opt}
+        </button>`).join('')}
+    </div>
+    <div class="feedback" id="feedback"></div>
+    <button class="next-btn" id="nextBtn" onclick="nextQuestion()">
+      ${current + 1 < TOTAL ? '下一題 →' : '看結果 🎉'}
+    </button>
+  `;
+}
+
+function answer(btn, chosen) {
+  if (answered) return;
+  answered = true;
+  const q = questions[current];
+  const btns = document.querySelectorAll('.option-btn');
+  btns.forEach(b => {
+    b.disabled = true;
+    if (b.textContent.trim() === q.correct) b.classList.add('correct');
+  });
+  const fb = document.getElementById('feedback');
+  if (chosen === q.correct) {
+    score++;
+    btn.classList.add('correct');
+    fb.textContent = '✅ 答對了！';
+    fb.className = 'feedback correct';
+  } else {
+    btn.classList.add('wrong');
+    fb.textContent = `❌ 正確答案是：${q.correct}`;
+    fb.className = 'feedback wrong';
+  }
+  document.getElementById('nextBtn').style.display = 'block';
+}
+
+function nextQuestion() {
+  current++;
+  if (current >= TOTAL) {
+    showResult();
+  } else {
+    renderQuestion();
+  }
+}
+
+function showResult() {
+  document.getElementById('progressBar').style.width = '100%';
+  document.getElementById('counter').textContent = '';
+  const pct = Math.round((score / TOTAL) * 100);
+  const emoji = pct === 100 ? '🏆' : pct >= 70 ? '🌟' : pct >= 40 ? '💪' : '📚';
+  const msg = pct === 100 ? '全對！太厲害了！' : pct >= 70 ? '表現很棒！繼續加油！' : pct >= 40 ? '不錯哦！多練習！' : '繼續努力，你可以的！';
+  document.getElementById('quizBody').innerHTML = `
+    <div class="score-card">
+      <div style="font-size:3rem;">${emoji}</div>
+      <div class="score-big">${score}<span style="font-size:2rem;color:var(--muted)">/${TOTAL}</span></div>
+      <div class="score-label">${msg}（正確率 ${pct}%）</div>
+      <button class="restart-btn" onclick="startQuiz()">再玩一次 🔄</button>
+    </div>
+  `;
+}
+
+function startQuiz() {
+  current = 0; score = 0;
+  generateQuestions();
+  renderQuestion();
+}
+
+startQuiz();
+</script>
+</body>
+</html>
